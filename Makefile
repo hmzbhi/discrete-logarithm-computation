@@ -1,15 +1,17 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -O3 -march=native -Wall
 
 # Directories
 SRC_DIR = src
+TOOLS_DIR = tools
 TEST_DIR = test
 ROOT_DIR = .
 
 # Source files and object files
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-OBJ_FILES = $(SRC_FILES:.c=.o)
+TOOLS_FILES = $(wildcard $(TOOLS_DIR)/*.c)
+OBJ_FILES = $(SRC_FILES:.c=.o) $(TOOLS_FILES:.c=.o)
 
 # Test files and executables
 TEST_FILES = $(wildcard $(TEST_DIR)/*.c)
@@ -20,6 +22,10 @@ all: $(TEST_EXEC)
 
 # Rule to compile source files into object files
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Rule to compile tools files into object files
+$(TOOLS_DIR)/%.o: $(TOOLS_DIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Rule to compile each test executable

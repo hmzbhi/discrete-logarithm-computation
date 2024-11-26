@@ -118,7 +118,13 @@ $$
 
 ### Q.5
 
-For this question, the implementation of `dlog64` is in [pollards_kangaroos.c](src/pollards_kangaroos.c) and the test verifying the correctness of our implementation is in [test_dlog64.c](test/test_dlog64.c).
+For this question, the implementation of `dlog64` is in [pollards_kangaroos.c](src/pollards_kangaroos.c#L53) and the test verifying the correctness of our implementation is in [test_dlog64.c](test/test_dlog64.c).
+
+It achieves high performance through several optimizations:
+
+- Utilizing bitwise operations in place of modulo computations for efficiency.
+- Calculating $g^{e_i}$ only once for each $i$, minimizing redundant computations.
+- Simultaneously laying new traps while checking for existing ones.
 
 ### Q.6
 
