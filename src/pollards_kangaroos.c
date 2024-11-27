@@ -55,7 +55,8 @@ uint64_t gen_rdm(void){
 }
 
 num128 dlog64(num128 target)
-{
+{   
+    // Create masks for jump selection and distinguishing elements
     uint64_t k_mask = parameters.k - 1;
     num128 *Jmap = calloc(parameters.k, sizeof(num128));
     if (!Jmap)
@@ -74,34 +75,40 @@ num128 dlog64(num128 target)
     uint64_t d_mask = ((uint64_t)1 << parameters.log_d_inv) - 1;
     
     for (unsigned i = 0; i < parameters.k; i++)
-    {
+    {   
+        // Randomly generate an exponent
         uint64_t exponent = xoshiro256plus_random() & (((uint64_t)1 << (parameters.log_mu + 1)) - 1);
         Jmap_exp[i] = exponent;
-        Jmap[i] = gexp(exponent);
+        Jmap[i] = gexp(exponent); // Precompute g^exponent for efficiency
     }
 
+    // Initialize a hash table to store traps
     struct Hashmap *traps = init_hash(1 << 4);
 
+    // Set up the tame kangaroo starting position
     num128 b;
     memcpy(&b, &(parameters.kangaroo_init_exp), sizeof(num128));
 
     num128 tame_kangaroo = gexp(b.t[0]);
-    num128 c = {.t = {0, 0}};
+    num128 c = {.t = {0, 0}}; // Exponent for the wild kangaroo
     
+    // Initialize the wild kangaroo at the target position
     num128 wild_kangaroo;
     memcpy(&wild_kangaroo, &target, sizeof(num128));
 
-    uint64_t wk_jump;
-    uint64_t tk_jump;
+    uint64_t wk_jump; // Jump index for the wild kangaroo
+    uint64_t tk_jump; // Jump index for the tame kangaroo
 
     struct HashNode *trap;
 
+    // Iteration counters for performance measurement
     uint64_t iter_count = 0;
     uint64_t wk_trap_count = 0;
     uint64_t tk_trap_count = 0;
 
-    num128 res;
+    num128 res; // Result to store the computed exponent
 
+    // Iterate until the wild kangaroo and tame kangaroo meet
     while (1)
     {
         wk_jump = wild_kangaroo.t[0] & k_mask;
@@ -109,9 +116,10 @@ num128 dlog64(num128 target)
 
         wild_kangaroo = mul11585(wild_kangaroo, Jmap[wk_jump]);
 
+        // Check if the wild kangaroo is on a distinguished element
         if ((wild_kangaroo.t[0] & d_mask) == 0)
         {
-            trap = add_hash(traps, wild_kangaroo, c);
+            trap = add_hash(traps, wild_kangaroo, c); // Attempt to lay a trap
             if (trap != NULL)
                 {
                     res = distance_exp(trap->value, c);
@@ -120,16 +128,18 @@ num128 dlog64(num128 target)
             wk_trap_count++;
         }
 
+        // Tame kangaroo jump logic
         tk_jump = tame_kangaroo.t[0] & k_mask;
         incr_exp(&b, Jmap_exp[tk_jump]);
         tame_kangaroo = mul11585(tame_kangaroo, Jmap[tk_jump]);
         
+        // Check if the tame kangaroo is on a distinguished element
         if ((tame_kangaroo.t[0] & d_mask) == 0)
         {
-            trap = add_hash(traps, tame_kangaroo, b);
+            trap = add_hash(traps, tame_kangaroo, b); // Attempt to lay a trap
                 if (trap != NULL)
                 {
-                    res = distance_exp(b, trap->value);
+                    res = distance_exp(b, trap->value);  // Attempt to lay a trap
                     break;
                 }
             tk_trap_count++;
@@ -137,12 +147,14 @@ num128 dlog64(num128 target)
         iter_count++;
     }
 
+    // Print performance metrics
     printf("\n");
     printf("Iterations: %lu\n", iter_count);
     printf("Wild kangaroo traps: %lu\n", wk_trap_count);
     printf("Tame kangaroo traps: %lu\n", tk_trap_count);
     printf("\n");
 
+    // Free allocated memory
     free(Jmap);
     free(Jmap_exp);
     free_hash(traps);

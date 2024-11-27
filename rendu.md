@@ -137,3 +137,24 @@ On average (10 runs), the algorithm terminates after approximately $3560048283\a
 On average, each kangaroo lays about $54$ traps. Consequently, the memory usage is minimal, as we only need to store the position and associated exponent for each trap, along with a few precomputed constants.
 
 ### Q.7
+
+We can change the parameters of the algorithm by changing the values in [pollards_kangaroos.c](src/pollards_kangaroos.c#L10):
+
+```c
+struct parameterisation parameters = {
+    .k = 32,
+    .log_mu = 31,
+    .log_d_inv = 26,
+    .kangaroo_init_exp = {.t = {((uint64_t)1 << 63), 0}}
+};
+```
+
+Then we can observe the following statements:
+
+- Changing $k$ (originally set to $32$) to $16$ or $64$ has little impact on performance. However, setting $k$ too small can prevent the algorithm from finding a solution This issue arises because the jump map needs to be sufficiently random to ensure that the kangaroos eventually converge to the same position.
+
+- The value of $\mu$ significantly impacts performance. A too-small value may prevent one kangaroo from reaching the first trap of the other, as the large initial gap between their positions makes overlap unlikely. Conversely, a value too large reduces the density of points in the jump map, leading to longer search times.
+
+- Regarding the parameter $d$, while the number of iterations required for the kangaroos to intersect their footprints remains the same, fewer traps mean they need to jump more times to find a solution. Conversely, using a bigger $d$ does not significantly affect the number of iterations but consumes much more memory without meaningful benefits
+
+- Finally, the starting position of the tame kangaroo significantly affects performance, as it determines the initial gap between the two kangaroos.
