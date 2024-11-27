@@ -122,10 +122,18 @@ For this question, the implementation of `dlog64` is in [pollards_kangaroos.c](s
 
 It achieves high performance through several optimizations:
 
-- Utilizing bitwise operations in place of modulo computations for efficiency.
 - Calculating $g^{e_i}$ only once for each $i$, minimizing redundant computations.
 - Simultaneously laying new traps while checking for existing ones.
+- Utilizing bitwise operations in place of modulo computations for efficiency.
 
 ### Q.6
+
+You can evaluate the performance by running [test_perf.c](test/test_perf.c). This will generate a performance footprint, including the number of ticks that measure the complete execution of `dlog64` ( including prints and other non-essential operations).
+
+![Shell-print](/doc/perfs.png "Perfs of dlog64")
+
+On average (10 runs), the algorithm terminates after approximately $3560048283\approx 2^{31.73}$ iterations (where each iteration corresponds to one jump per kangaroo), taking around **$55.71$ seconds** of CPU time. This closely aligns with the expected value of $\sqrt{W} = 2^{32}$, as predicted by the heuristic analysis.
+
+On average, each kangaroo lays about $54$ traps. Consequently, the memory usage is minimal, as we only need to store the position and associated exponent for each trap, along with a few precomputed constants.
 
 ### Q.7

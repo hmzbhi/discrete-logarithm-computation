@@ -8,11 +8,6 @@ void test(){
 
     if (!memcmp(&res, &target, sizeof(num128))) {
         printf("PASSED\n");
-        
-        printf("dlog64(");
-        print_num128(target);
-        printf(") = %lu, = gexp(%lu)\n",exp.t[0], exp.t[0]);
-
     } else {
         printf("FAILED\n");
     }

@@ -50,6 +50,10 @@ void incr_exp(num128 *exp, uint64_t incr)
     }
 }
 
+uint64_t gen_rdm(void){
+	return xoshiro256plus_random();
+}
+
 num128 dlog64(num128 target)
 {
     uint64_t k_mask = parameters.k - 1;
@@ -132,6 +136,12 @@ num128 dlog64(num128 target)
         }
         iter_count++;
     }
+
+    printf("\n");
+    printf("Iterations: %lu\n", iter_count);
+    printf("Wild kangaroo traps: %lu\n", wk_trap_count);
+    printf("Tame kangaroo traps: %lu\n", tk_trap_count);
+    printf("\n");
 
     free(Jmap);
     free(Jmap_exp);
